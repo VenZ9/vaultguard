@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -36,7 +35,7 @@ fun ServiceIconView(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val iconResolver = remember { IconResolver(context) }
+    val iconResolver = remember(context) { IconResolver.getInstance(context) }
     val resolvedIcon = remember(name, urlOrPackage, customIconUri, allowFavicon) {
         iconResolver.resolveIcon(name, urlOrPackage, customIconUri, allowFavicon)
     }
@@ -49,8 +48,9 @@ fun ServiceIconView(
     ) {
         when (resolvedIcon) {
             is ResolvedIcon.InstalledApp -> {
-                val bitmap: Bitmap = remember(resolvedIcon.drawable) {
-                    resolvedIcon.drawable.toBitmap(size.value.toInt() * 2, size.value.toInt() * 2)
+                val bitmap: Bitmap = remember(resolvedIcon, size) {
+                    val targetPx = (size.value * 2).toInt().coerceAtLeast(48)
+                    resolvedIcon.drawable.toBitmap(targetPx, targetPx)
                 }
                 Image(
                     bitmap = bitmap.asImageBitmap(),

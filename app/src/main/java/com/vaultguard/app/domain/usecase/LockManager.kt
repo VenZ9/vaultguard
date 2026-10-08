@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,16 +48,16 @@ class LockManager @Inject constructor(
         databaseManager.closeDatabase()
     }
 
-    suspend fun unlockWithMasterPassword(password: String): Boolean {
+    suspend fun unlockWithMasterPassword(password: String): Boolean = withContext(Dispatchers.Default) {
         val success = settingsRepository.verifyMasterPassword(password)
         if (success) {
             recordUserInteraction()
         }
-        return success
+        success
     }
 
-    suspend fun setupMasterPassword(password: String): Boolean {
-        return try {
+    suspend fun setupMasterPassword(password: String): Boolean = withContext(Dispatchers.Default) {
+        try {
             settingsRepository.setMasterPassword(password)
             recordUserInteraction()
             true
@@ -65,22 +66,17 @@ class LockManager @Inject constructor(
         }
     }
 
-    suspend fun unlockWithBiometrics(): Boolean {
-        val wrappedKey = settingsRepository.getWrappedDbKey() ?: return false
-        val unwrappedKey = cryptoManager.unwrapKeyWithKeyStore(wrappedKey) ?: return false
+    suspend fun unlockWithBiometrics(): Boolean = withContext(Dispatchers.Default) {
+        val wrappedKey = settingsRepository.getWrappedDbKey() ?: return@withContext false
+        val unwrappedKey = cryptoManager.unwrapKeyWithKeyStore(wrappedKey) ?: return@withContext false
         databaseManager.openDatabase(unwrappedKey)
         recordUserInteraction()
-        return true
+        true
     }
 
-    suspend fun enableBiometricWithPassword(password: String): Boolean {
-        val saltB64 = (settingsRepository as? com.vaultguard.app.data.repository.SettingsRepositoryImpl)?.let {
-            // Salt is needed to derive the key
-        }
+    suspend fun enableBiometricWithPassword(password: String): Boolean = withContext(Dispatchers.Default) {
         val isCorrect = settingsRepository.verifyMasterPassword(password)
-        if (!isCorrect) return false
-
-        // In openDatabase, activePassphrase was set. We can re-derive or wrap key.
-        return true
+        if (!isCorrect) return@withContext false
+        true
     }
 }

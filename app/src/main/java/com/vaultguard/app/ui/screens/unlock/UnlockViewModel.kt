@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.vaultguard.app.domain.repository.SettingsRepository
 import com.vaultguard.app.domain.usecase.LockManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -70,7 +71,7 @@ class UnlockViewModel @Inject constructor(
             return
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             try {
                 if (state.isFirstTimeSetup) {
@@ -121,7 +122,7 @@ class UnlockViewModel @Inject constructor(
     }
 
     fun unlockWithBiometric() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Default) {
             _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
             try {
                 val success = lockManager.unlockWithBiometrics()

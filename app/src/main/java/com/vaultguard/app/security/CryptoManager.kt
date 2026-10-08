@@ -24,8 +24,8 @@ class CryptoManager @Inject constructor() {
 
     companion object {
         private const val KEYSTORE_ALIAS = "VaultGuard_KeyStore_Key"
-        private const val ARGON2_ITERATIONS = 3
-        private const val ARGON2_MEMORY_KB = 32 * 1024 // 32MB for balanced mobile speed & security
+        private const val ARGON2_ITERATIONS = 2
+        private const val ARGON2_MEMORY_KB = 16 * 1024 // 16MB for responsive mobile speed & security
         private const val ARGON2_PARALLELISM = 1
         private const val KEY_LENGTH_BYTES = 32 // 256 bits
         private const val SALT_LENGTH_BYTES = 16
