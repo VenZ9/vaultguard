@@ -119,7 +119,7 @@ class SaveCredentialActivity : ComponentActivity() {
                             val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO)
                             scope.launch {
                                 try {
-                                    vaultRepository.deleteItem(itemId)
+                                    vaultRepository.deleteItemById(itemId)
                                 } catch (_: Exception) {}
                             }
                         }

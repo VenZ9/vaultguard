@@ -321,7 +321,7 @@ fun SettingsScreen(
                                     context.startActivity(intent)
                                 } catch (_: Exception) {
                                     try {
-                                        context.startActivity(Intent(Settings.ACTION_AUTOFILL_SETTINGS))
+                                        context.startActivity(Intent("android.settings.REQUEST_SET_AUTOFILL_SERVICE"))
                                     } catch (_: Exception) {
                                         context.startActivity(Intent(Settings.ACTION_SETTINGS))
                                     }
