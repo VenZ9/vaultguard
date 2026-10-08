@@ -24,7 +24,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun getSettings(): VaultSettings = settingsDataStore.getSettings()
 
-    override suspend fun setMasterPassword(password: String) = withContext(Dispatchers.Default) {
+    override suspend fun setMasterPassword(password: String): Unit = withContext(Dispatchers.Default) {
         val salt = cryptoManager.generateSalt()
         val derivedKey = cryptoManager.deriveKey(password.toCharArray(), salt)
 
@@ -33,6 +33,7 @@ class SettingsRepositoryImpl @Inject constructor(
 
         settingsDataStore.setMasterPasswordSecurity(hashB64, saltB64)
         databaseManager.openDatabase(derivedKey)
+        Unit
     }
 
     override suspend fun verifyMasterPassword(password: String): Boolean = withContext(Dispatchers.Default) {
