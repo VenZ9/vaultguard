@@ -1,6 +1,7 @@
 package com.vaultguard.app.autofill
 
 import android.app.assist.AssistStructure
+import android.content.Intent
 import android.os.CancellationSignal
 import android.service.autofill.AutofillService
 import android.service.autofill.Dataset
@@ -155,7 +156,7 @@ class VaultGuardAutofillService : AutofillService() {
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
         val structure = request.fillContexts.lastOrNull()?.structure
-        if (structure == null || !databaseManager.isUnlocked.value) {
+        if (structure == null) {
             callback.onSuccess()
             return
         }
@@ -172,21 +173,18 @@ class VaultGuardAutofillService : AutofillService() {
                     val serviceName = parsedForm.webDomain?.substringBefore(".")?.replaceFirstChar { it.uppercase() }
                         ?: parsedForm.packageName.substringAfterLast(".").replaceFirstChar { it.uppercase() }
 
-                    val newItem = VaultItem(
-                        id = UUID.randomUUID().toString(),
-                        type = SecretType.LOGIN,
-                        name = serviceName,
-                        username = username,
-                        password = password,
-                        urlOrPackage = parsedForm.webDomain ?: parsedForm.packageName,
-                        notes = "Saved via VaultGuard Autofill"
-                    )
-
-                    vaultRepository.saveItem(newItem)
-                    Timber.d("Successfully saved credentials via autofill: %s", serviceName)
+                    val intent = Intent(this@VaultGuardAutofillService, SaveCredentialActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        putExtra(SaveCredentialActivity.EXTRA_SERVICE_NAME, serviceName)
+                        putExtra(SaveCredentialActivity.EXTRA_USERNAME, username)
+                        putExtra(SaveCredentialActivity.EXTRA_PASSWORD, password)
+                        putExtra(SaveCredentialActivity.EXTRA_URL_OR_PACKAGE, parsedForm.webDomain ?: parsedForm.packageName)
+                    }
+                    startActivity(intent)
+                    Timber.d("Launched SaveCredentialActivity pop-up for %s", serviceName)
                 }
             } catch (e: Exception) {
-                Timber.e(e, "Failed to save credentials from autofill save request")
+                Timber.e(e, "Failed to launch save dialog from autofill save request")
             } finally {
                 callback.onSuccess()
             }
@@ -206,6 +204,7 @@ class VaultGuardAutofillService : AutofillService() {
         }
 
         val saveInfoBuilder = SaveInfo.Builder(saveType, requiredIds)
+        saveInfoBuilder.setDescription(getString(R.string.autofill_save_prompt))
         parsedForm.usernameField?.autofillId?.let { usernameId ->
             saveInfoBuilder.setOptionalIds(arrayOf(usernameId))
         }

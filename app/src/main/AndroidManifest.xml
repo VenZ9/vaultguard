@@ -24,6 +24,12 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".autofill.SaveCredentialActivity"
+            android:exported="false"
+            android:theme="@style/Theme.VaultGuard.Dialog"
+            android:excludeFromRecents="true" />
+
         <service
             android:name=".autofill.VaultGuardAutofillService"
             android:exported="true"

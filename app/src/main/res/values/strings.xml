@@ -3,5 +3,7 @@
     <string name="app_name">VaultGuard</string>
     <string name="autofill_service_name">VaultGuard Autofill</string>
     <string name="autofill_fill_suggestion">Fill with VaultGuard</string>
-    <string name="autofill_save_prompt">Save credential to VaultGuard?</string>
+    <string name="autofill_save_prompt">Save login info to VaultGuard?</string>
+    <string name="autofill_save_yes">Yes, save it.</string>
+    <string name="autofill_save_no">No, don\'t save it.</string>
 </resources>
