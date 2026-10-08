@@ -19,6 +19,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -70,7 +71,7 @@ fun VaultNavGraph(
             ) {
                 NavigationBar(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = MaterialTheme.colorScheme.surfaceVariant.let { androidx.compose.ui.unit.dp.times(3) }
+                    tonalElevation = 3.dp
                 ) {
                     BottomTab.entries.forEach { tab ->
                         val isSelected = currentRoute == tab.route

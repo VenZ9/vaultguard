@@ -62,7 +62,7 @@ object AutofillParser {
                 allNodes.add(autofillNode)
 
                 // Detect Field types
-                val isNewPassword = hasHint(autofillHints, View.AUTOFILL_HINT_NEW_PASSWORD) ||
+                val isNewPassword = hasHint(autofillHints, "newPassword", "new_password") ||
                         containsAny(idEntry, "new_password", "newpassword", "signup_password") ||
                         containsAny(hint, "new password", "create password")
 

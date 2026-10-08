@@ -6,7 +6,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+import net.sqlcipher.database.SupportFactory
 import java.util.Arrays
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,7 +31,7 @@ class DatabaseManager @Inject constructor(
         }
 
         val passphraseCopy = passphrase.clone()
-        val factory = SupportOpenHelperFactory(passphraseCopy)
+        val factory = SupportFactory(passphraseCopy)
 
         val db = Room.databaseBuilder(
             context,
