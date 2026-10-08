@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">VaultGuard</string>
+    <string name="autofill_service_name">VaultGuard Autofill</string>
+    <string name="autofill_fill_suggestion">Fill with VaultGuard</string>
+    <string name="autofill_save_prompt">Save credential to VaultGuard?</string>
+</resources>

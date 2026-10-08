@@ -1,0 +1,29 @@
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# App specific
+app/build/
+
+# Signing files
+*.jks
+*.keystore
+
+# Google Services
+google-services.json
+
+# Environment / Termux files
+.termux/
+.gemini/
+.config/
+.local/
+.ssh/
+IndusTiers/
+IndusTiers-agy/
