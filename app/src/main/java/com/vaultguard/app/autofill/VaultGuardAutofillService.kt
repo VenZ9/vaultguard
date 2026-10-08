@@ -36,7 +36,7 @@ class VaultGuardAutofillService : AutofillService() {
     @Inject
     lateinit var databaseManager: DatabaseManager
 
-    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     override fun onFillRequest(
         request: FillRequest,
@@ -155,23 +155,41 @@ class VaultGuardAutofillService : AutofillService() {
     }
 
     override fun onSaveRequest(request: SaveRequest, callback: SaveCallback) {
-        val structure = request.fillContexts.lastOrNull()?.structure
-        if (structure == null) {
+        val contexts = request.fillContexts
+        if (contexts.isEmpty()) {
             callback.onSuccess()
             return
         }
 
-        serviceScope.launch {
-            try {
-                val parsedForm = AutofillParser.parseStructure(structure)
-                val username = parsedForm.usernameField?.textValue ?: ""
-                val password = parsedForm.passwordField?.textValue
-                    ?: parsedForm.newPasswordField?.textValue
-                    ?: ""
+        // Unblock the host browser/app immediately without any delay
+        callback.onSuccess()
 
-                if (password.isNotBlank()) {
-                    val serviceName = parsedForm.webDomain?.substringBefore(".")?.replaceFirstChar { it.uppercase() }
-                        ?: parsedForm.packageName.substringAfterLast(".").replaceFirstChar { it.uppercase() }
+        serviceScope.launch(Dispatchers.Default) {
+            try {
+                var detectedUsername = ""
+                var detectedPassword = ""
+                var detectedDomain: String? = null
+                var detectedPackage = ""
+
+                // Check all fill contexts in reverse order to handle both single-step and multi-step forms
+                for (fillContext in contexts.reversed()) {
+                    val form = AutofillParser.parseStructure(fillContext.structure)
+                    if (detectedPackage.isBlank()) detectedPackage = form.packageName
+                    if (detectedDomain == null && !form.webDomain.isNullOrBlank()) detectedDomain = form.webDomain
+
+                    if (detectedPassword.isBlank()) {
+                        detectedPassword = form.passwordField?.textValue
+                            ?: form.newPasswordField?.textValue
+                            ?: ""
+                    }
+                    if (detectedUsername.isBlank() && form.usernameField?.textValue?.isNotBlank() == true) {
+                        detectedUsername = form.usernameField.textValue ?: ""
+                    }
+                }
+
+                if (detectedPassword.isNotBlank()) {
+                    val serviceName = detectedDomain?.substringBefore(".")?.replaceFirstChar { it.uppercase() }
+                        ?: detectedPackage.substringAfterLast(".").replaceFirstChar { it.uppercase() }
 
                     var savedItemId: String? = null
                     if (databaseManager.isUnlocked.value) {
@@ -179,9 +197,9 @@ class VaultGuardAutofillService : AutofillService() {
                             id = UUID.randomUUID().toString(),
                             type = SecretType.LOGIN,
                             name = serviceName,
-                            username = username,
-                            password = password,
-                            urlOrPackage = parsedForm.webDomain ?: parsedForm.packageName,
+                            username = detectedUsername,
+                            password = detectedPassword,
+                            urlOrPackage = detectedDomain ?: detectedPackage,
                             notes = "Saved via VaultGuard Autofill"
                         )
                         vaultRepository.saveItem(newItem)
@@ -193,9 +211,9 @@ class VaultGuardAutofillService : AutofillService() {
                         val intent = Intent(this@VaultGuardAutofillService, SaveCredentialActivity::class.java).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                             putExtra(SaveCredentialActivity.EXTRA_SERVICE_NAME, serviceName)
-                            putExtra(SaveCredentialActivity.EXTRA_USERNAME, username)
-                            putExtra(SaveCredentialActivity.EXTRA_PASSWORD, password)
-                            putExtra(SaveCredentialActivity.EXTRA_URL_OR_PACKAGE, parsedForm.webDomain ?: parsedForm.packageName)
+                            putExtra(SaveCredentialActivity.EXTRA_USERNAME, detectedUsername)
+                            putExtra(SaveCredentialActivity.EXTRA_PASSWORD, detectedPassword)
+                            putExtra(SaveCredentialActivity.EXTRA_URL_OR_PACKAGE, detectedDomain ?: detectedPackage)
                             savedItemId?.let { putExtra(SaveCredentialActivity.EXTRA_ITEM_ID, it) }
                         }
                         startActivity(intent)
@@ -206,8 +224,6 @@ class VaultGuardAutofillService : AutofillService() {
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to launch save dialog from autofill save request")
-            } finally {
-                callback.onSuccess()
             }
         }
     }

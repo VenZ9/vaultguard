@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 enum class SecretType {
     LOGIN,
     API_KEY,
-    APP_PASSWORD
+    APP_PASSWORD,
+    PASSKEY
 }
 
 @Serializable
@@ -31,6 +32,10 @@ data class VaultItem(
     val isFavorite: Boolean = false,
     val customFieldMappings: List<FieldMapping> = emptyList(),
     val customIconUri: String? = null,
+    val passkeyCredentialId: String = "",
+    val passkeyRelyingParty: String = "",
+    val passkeyUserHandle: String = "",
+    val passkeyPublicKey: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val lastUsedAt: Long = 0L

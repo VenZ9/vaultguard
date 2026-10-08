@@ -10,6 +10,7 @@ import com.vaultguard.app.domain.model.VaultItem
 import com.vaultguard.app.domain.repository.VaultRepository
 import com.vaultguard.app.domain.usecase.GeneratePasswordUseCase
 import com.vaultguard.app.domain.usecase.SaveVaultItemUseCase
+import com.vaultguard.app.security.PasskeyCrypto
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,10 @@ data class AddEditUiState(
     val isFavorite: Boolean = false,
     val customIconUri: String? = null,
     val customFieldMappings: List<FieldMapping> = emptyList(),
+    val passkeyCredentialId: String = "",
+    val passkeyRelyingParty: String = "",
+    val passkeyUserHandle: String = "",
+    val passkeyPublicKey: String = "",
     val errorMessage: String? = null,
     val isSaved: Boolean = false
 )
@@ -83,7 +88,11 @@ class AddEditViewModel @Inject constructor(
                     folderOrTag = item.folderOrTag,
                     isFavorite = item.isFavorite,
                     customIconUri = item.customIconUri,
-                    customFieldMappings = item.customFieldMappings
+                    customFieldMappings = item.customFieldMappings,
+                    passkeyCredentialId = item.passkeyCredentialId,
+                    passkeyRelyingParty = item.passkeyRelyingParty,
+                    passkeyUserHandle = item.passkeyUserHandle,
+                    passkeyPublicKey = item.passkeyPublicKey
                 )
             }
         }
@@ -157,6 +166,28 @@ class AddEditViewModel @Inject constructor(
         }
     }
 
+    fun generatePasskey() {
+        val rp = _uiState.value.urlOrPackage.ifBlank {
+            _uiState.value.name.lowercase().replace(" ", "") + ".com"
+        }
+        val user = _uiState.value.username.ifBlank { "user" }
+        val passkey = PasskeyCrypto.generatePasskey(rp, user)
+        val noteInfo = if (_uiState.value.notes.isNotBlank()) {
+            _uiState.value.notes + "\nPasskey Fingerprint: " + passkey.keyFingerprint
+        } else {
+            "Passkey Algorithm: ${passkey.algorithm}\nFingerprint: ${passkey.keyFingerprint}"
+        }
+        _uiState.value = _uiState.value.copy(
+            type = SecretType.PASSKEY,
+            password = passkey.privateKeyPkcs8Base64,
+            passkeyCredentialId = passkey.credentialId,
+            passkeyRelyingParty = passkey.relyingParty,
+            passkeyUserHandle = passkey.userHandle,
+            passkeyPublicKey = passkey.publicKeyPem,
+            notes = noteInfo
+        )
+    }
+
     fun save() {
         val state = _uiState.value
         if (state.name.isBlank()) {
@@ -179,6 +210,10 @@ class AddEditViewModel @Inject constructor(
                     isFavorite = state.isFavorite,
                     customIconUri = state.customIconUri,
                     customFieldMappings = state.customFieldMappings,
+                    passkeyCredentialId = state.passkeyCredentialId,
+                    passkeyRelyingParty = state.passkeyRelyingParty,
+                    passkeyUserHandle = state.passkeyUserHandle,
+                    passkeyPublicKey = state.passkeyPublicKey,
                     updatedAt = System.currentTimeMillis()
                 )
                 saveVaultItemUseCase(item)

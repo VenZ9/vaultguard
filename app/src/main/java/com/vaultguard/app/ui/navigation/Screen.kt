@@ -3,12 +3,14 @@ package com.vaultguard.app.ui.navigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(val route: String) {
     data object Unlock : Screen("unlock")
     data object Vault : Screen("vault")
+    data object Audit : Screen("audit")
     data object Generator : Screen("generator")
     data object Settings : Screen("settings")
     data object AddEdit : Screen("addedit/{itemId}") {
@@ -25,6 +27,7 @@ enum class BottomTab(
     val icon: ImageVector
 ) {
     VAULT(Screen.Vault.route, "Vault", Icons.Filled.Lock),
+    AUDIT(Screen.Audit.route, "Security", Icons.Filled.Security),
     GENERATOR(Screen.Generator.route, "Generator", Icons.Filled.AutoFixHigh),
     SETTINGS(Screen.Settings.route, "Settings", Icons.Filled.Settings)
 }

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
@@ -169,6 +170,7 @@ fun AddEditItemScreen(
                                     SecretType.LOGIN -> "Login"
                                     SecretType.API_KEY -> "API Key"
                                     SecretType.APP_PASSWORD -> "App Password"
+                                    SecretType.PASSKEY -> "Passkey"
                                 }
                             )
                         },
@@ -206,6 +208,7 @@ fun AddEditItemScreen(
                                 SecretType.LOGIN -> "e.g. Gemini, GitHub"
                                 SecretType.API_KEY -> "e.g. OpenAI API, Stripe"
                                 SecretType.APP_PASSWORD -> "e.g. Banking App, WhatsApp"
+                                SecretType.PASSKEY -> "e.g. Google, GitHub Passkey"
                             }
                         )
                     },
@@ -481,6 +484,101 @@ fun AddEditItemScreen(
                         shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.fillMaxWidth()
                     )
+                }
+
+                SecretType.PASSKEY -> {
+                    OutlinedTextField(
+                        value = uiState.username,
+                        onValueChange = viewModel::onUsernameChanged,
+                        label = { Text("User / Account Handle") },
+                        placeholder = { Text("e.g. alex@example.com") },
+                        leadingIcon = {
+                            Icon(imageVector = Icons.Filled.Person, contentDescription = null)
+                        },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = uiState.urlOrPackage,
+                        onValueChange = viewModel::onUrlOrPackageChanged,
+                        label = { Text("Relying Party / Domain") },
+                        placeholder = { Text("e.g. github.com, google.com") },
+                        leadingIcon = {
+                            Icon(imageVector = Icons.Filled.Language, contentDescription = null)
+                        },
+                        singleLine = true,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Filled.Fingerprint,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "FIDO2 / WebAuthn Passkey",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "Passkeys use phishing-resistant public-key cryptography (ES256 / ECDSA P-256) stored securely in your vault.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            if (uiState.passkeyCredentialId.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = "Credential ID: ${uiState.passkeyCredentialId.take(16)}...",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Algorithm: ES256 (P-256)",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Button(
+                                onClick = {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    viewModel.generatePasskey()
+                                },
+                                shape = MaterialTheme.shapes.medium,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(imageVector = Icons.Filled.Key, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(if (uiState.passkeyCredentialId.isNotBlank()) "Regenerate Keypair" else "Generate Cryptographic Passkey")
+                            }
+                        }
+                    }
                 }
             }
 

@@ -23,6 +23,10 @@ data class VaultItemEntity(
     val isFavorite: Boolean = false,
     val customFieldMappingsJson: String = "[]",
     val customIconUri: String? = null,
+    val passkeyCredentialId: String = "",
+    val passkeyRelyingParty: String = "",
+    val passkeyUserHandle: String = "",
+    val passkeyPublicKey: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val lastUsedAt: Long = 0L
@@ -52,6 +56,10 @@ data class VaultItemEntity(
             isFavorite = isFavorite,
             customFieldMappings = mappings,
             customIconUri = customIconUri,
+            passkeyCredentialId = passkeyCredentialId,
+            passkeyRelyingParty = passkeyRelyingParty,
+            passkeyUserHandle = passkeyUserHandle,
+            passkeyPublicKey = passkeyPublicKey,
             createdAt = createdAt,
             updatedAt = updatedAt,
             lastUsedAt = lastUsedAt
@@ -78,6 +86,10 @@ data class VaultItemEntity(
                 isFavorite = item.isFavorite,
                 customFieldMappingsJson = mappingsJson,
                 customIconUri = item.customIconUri,
+                passkeyCredentialId = item.passkeyCredentialId,
+                passkeyRelyingParty = item.passkeyRelyingParty,
+                passkeyUserHandle = item.passkeyUserHandle,
+                passkeyPublicKey = item.passkeyPublicKey,
                 createdAt = item.createdAt,
                 updatedAt = item.updatedAt,
                 lastUsedAt = item.lastUsedAt

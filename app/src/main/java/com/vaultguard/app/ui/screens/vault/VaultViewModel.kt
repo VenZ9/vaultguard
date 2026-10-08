@@ -25,6 +25,7 @@ import javax.inject.Inject
 enum class VaultFilterChip {
     ALL,
     LOGINS,
+    PASSKEYS,
     API_KEYS,
     APP_PASSWORDS,
     FAVORITES
@@ -77,6 +78,7 @@ class VaultViewModel @Inject constructor(
             ) { query, chip, sort, tag ->
                 val type = when (chip) {
                     VaultFilterChip.LOGINS -> SecretType.LOGIN
+                    VaultFilterChip.PASSKEYS -> SecretType.PASSKEY
                     VaultFilterChip.API_KEYS -> SecretType.API_KEY
                     VaultFilterChip.APP_PASSWORDS -> SecretType.APP_PASSWORD
                     else -> null

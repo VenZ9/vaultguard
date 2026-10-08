@@ -42,6 +42,19 @@
                 android:resource="@xml/autofill_service_configuration" />
         </service>
 
+        <service
+            android:name=".autofill.VaultGuardCredentialProviderService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_CREDENTIAL_PROVIDER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.credentials.CredentialProviderService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.credentials.provider"
+                android:resource="@xml/credential_provider_configuration" />
+        </service>
+
     </application>
 
 </manifest>

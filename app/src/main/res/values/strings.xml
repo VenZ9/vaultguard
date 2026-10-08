@@ -6,4 +6,5 @@
     <string name="autofill_save_prompt">Save login info to VaultGuard?</string>
     <string name="autofill_save_yes">Yes, save it.</string>
     <string name="autofill_save_no">No, don\'t save it.</string>
+    <string name="credential_provider_subtitle">Passkeys and Passwords</string>
 </resources>

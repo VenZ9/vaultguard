@@ -35,6 +35,8 @@ import com.vaultguard.app.ui.screens.addedit.AddEditItemScreen
 import com.vaultguard.app.ui.screens.addedit.AddEditViewModel
 import com.vaultguard.app.ui.screens.detail.DetailViewModel
 import com.vaultguard.app.ui.screens.detail.ItemDetailScreen
+import com.vaultguard.app.ui.screens.audit.AuditScreen
+import com.vaultguard.app.ui.screens.audit.AuditViewModel
 import com.vaultguard.app.ui.screens.generator.GeneratorViewModel
 import com.vaultguard.app.ui.screens.generator.PasswordGeneratorScreen
 import com.vaultguard.app.ui.screens.settings.SettingsScreen
@@ -57,6 +59,7 @@ fun VaultNavGraph(
 
     val showBottomBar = currentRoute in listOf(
         Screen.Vault.route,
+        Screen.Audit.route,
         Screen.Generator.route,
         Screen.Settings.route
     )
@@ -139,6 +142,17 @@ fun VaultNavGraph(
                         navController.navigate(Screen.AddEdit.createRoute("new"))
                     },
                     onNavigateToDetail = { itemId ->
+                        lockManager.recordUserInteraction()
+                        navController.navigate(Screen.Detail.createRoute(itemId))
+                    }
+                )
+            }
+
+            composable(Screen.Audit.route) {
+                val auditViewModel: AuditViewModel = hiltViewModel()
+                AuditScreen(
+                    viewModel = auditViewModel,
+                    onNavigateToItem = { itemId ->
                         lockManager.recordUserInteraction()
                         navController.navigate(Screen.Detail.createRoute(itemId))
                     }

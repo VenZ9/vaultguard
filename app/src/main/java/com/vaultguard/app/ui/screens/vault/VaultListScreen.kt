@@ -213,6 +213,7 @@ fun VaultListScreen(
                                 text = when (chip) {
                                     VaultFilterChip.ALL -> "All"
                                     VaultFilterChip.LOGINS -> "Logins"
+                                    VaultFilterChip.PASSKEYS -> "Passkeys"
                                     VaultFilterChip.API_KEYS -> "API Keys"
                                     VaultFilterChip.APP_PASSWORDS -> "App Passwords"
                                     VaultFilterChip.FAVORITES -> "Favorites"
@@ -366,6 +367,7 @@ fun VaultItemCard(
                         SecretType.LOGIN -> "LOGIN"
                         SecretType.API_KEY -> "API KEY"
                         SecretType.APP_PASSWORD -> "APP"
+                        SecretType.PASSKEY -> "PASSKEY"
                     }
                     Box(
                         modifier = Modifier
@@ -384,6 +386,7 @@ fun VaultItemCard(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 val subtitle = when {
+                    item.type == SecretType.PASSKEY -> if (item.username.isNotBlank()) "${item.username} • Passkey" else "Passkey (${item.urlOrPackage})"
                     item.type == SecretType.API_KEY -> "•••••••••••• (API Key)"
                     item.username.isNotBlank() -> item.username
                     item.urlOrPackage.isNotBlank() -> item.urlOrPackage
