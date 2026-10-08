@@ -103,7 +103,7 @@ object AutofillParser {
 
                 // Detect Field types with fast multi-attribute heuristics
                 val isNewPassword = isHtmlNewPassword ||
-                        hasHint(autofillHints, "newPassword", "new_password", View.AUTOFILL_HINT_NEW_PASSWORD) ||
+                        hasHint(autofillHints, "newPassword", "new_password") ||
                         containsAny(idEntry, "new_password", "newpassword", "signup_password", "reg_password") ||
                         containsAny(hint, "new password", "create password", "choose password")
 

@@ -188,6 +188,7 @@ fun ItemDetailScreen(
                         SecretType.LOGIN -> "LOGIN CREDENTIAL"
                         SecretType.API_KEY -> "API KEY"
                         SecretType.APP_PASSWORD -> "APP PASSWORD"
+                        SecretType.PASSKEY -> "PASSKEY"
                     }
                     Box(
                         modifier = Modifier

@@ -1,5 +1,8 @@
 package com.vaultguard.app.autofill
 
+import android.credentials.ClearCredentialStateException
+import android.credentials.CreateCredentialException
+import android.credentials.GetCredentialException
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.OutcomeReceiver
@@ -8,9 +11,7 @@ import android.service.credentials.BeginCreateCredentialResponse
 import android.service.credentials.BeginGetCredentialRequest
 import android.service.credentials.BeginGetCredentialResponse
 import android.service.credentials.ClearCredentialStateRequest
-import android.service.credentials.CreateCredentialException
 import android.service.credentials.CredentialProviderService
-import android.service.credentials.GetCredentialException
 import androidx.annotation.RequiresApi
 import com.vaultguard.app.data.local.DatabaseManager
 import com.vaultguard.app.domain.repository.VaultRepository
@@ -51,7 +52,7 @@ class VaultGuardCredentialProviderService : CredentialProviderService() {
     override fun onClearCredentialState(
         request: ClearCredentialStateRequest,
         cancellationSignal: CancellationSignal,
-        callback: OutcomeReceiver<Void?, ClearCredentialException>
+        callback: OutcomeReceiver<Void, ClearCredentialStateException>
     ) {
         Timber.d("VaultGuard CredentialProvider onClearCredentialState")
         callback.onResult(null)
