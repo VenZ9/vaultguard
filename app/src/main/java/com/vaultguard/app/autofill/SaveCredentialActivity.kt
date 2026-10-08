@@ -66,6 +66,7 @@ class SaveCredentialActivity : ComponentActivity() {
         const val EXTRA_USERNAME = "extra_username"
         const val EXTRA_PASSWORD = "extra_password"
         const val EXTRA_URL_OR_PACKAGE = "extra_url_or_package"
+        const val EXTRA_ITEM_ID = "extra_item_id"
     }
 
     @Inject
@@ -87,6 +88,7 @@ class SaveCredentialActivity : ComponentActivity() {
         val username = intent.getStringExtra(EXTRA_USERNAME) ?: ""
         val password = intent.getStringExtra(EXTRA_PASSWORD) ?: ""
         val urlOrPackage = intent.getStringExtra(EXTRA_URL_OR_PACKAGE) ?: ""
+        val itemId = intent.getStringExtra(EXTRA_ITEM_ID)
 
         if (password.isBlank()) {
             finish()
@@ -101,9 +103,26 @@ class SaveCredentialActivity : ComponentActivity() {
                     password = password,
                     urlOrPackage = urlOrPackage,
                     onSave = {
-                        saveCredential(serviceName, username, password, urlOrPackage)
+                        if (itemId != null) {
+                            Toast.makeText(
+                                this@SaveCredentialActivity,
+                                "Login info saved to VaultGuard",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            finish()
+                        } else {
+                            saveCredential(serviceName, username, password, urlOrPackage)
+                        }
                     },
                     onDismiss = {
+                        if (itemId != null) {
+                            val scope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO)
+                            scope.launch {
+                                try {
+                                    vaultRepository.deleteItem(itemId)
+                                } catch (_: Exception) {}
+                            }
+                        }
                         finish()
                     }
                 )

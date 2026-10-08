@@ -173,15 +173,36 @@ class VaultGuardAutofillService : AutofillService() {
                     val serviceName = parsedForm.webDomain?.substringBefore(".")?.replaceFirstChar { it.uppercase() }
                         ?: parsedForm.packageName.substringAfterLast(".").replaceFirstChar { it.uppercase() }
 
-                    val intent = Intent(this@VaultGuardAutofillService, SaveCredentialActivity::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        putExtra(SaveCredentialActivity.EXTRA_SERVICE_NAME, serviceName)
-                        putExtra(SaveCredentialActivity.EXTRA_USERNAME, username)
-                        putExtra(SaveCredentialActivity.EXTRA_PASSWORD, password)
-                        putExtra(SaveCredentialActivity.EXTRA_URL_OR_PACKAGE, parsedForm.webDomain ?: parsedForm.packageName)
+                    var savedItemId: String? = null
+                    if (databaseManager.isUnlocked.value) {
+                        val newItem = VaultItem(
+                            id = UUID.randomUUID().toString(),
+                            type = SecretType.LOGIN,
+                            name = serviceName,
+                            username = username,
+                            password = password,
+                            urlOrPackage = parsedForm.webDomain ?: parsedForm.packageName,
+                            notes = "Saved via VaultGuard Autofill"
+                        )
+                        vaultRepository.saveItem(newItem)
+                        savedItemId = newItem.id
+                        Timber.d("Successfully saved credentials via autofill: %s", serviceName)
                     }
-                    startActivity(intent)
-                    Timber.d("Launched SaveCredentialActivity pop-up for %s", serviceName)
+
+                    try {
+                        val intent = Intent(this@VaultGuardAutofillService, SaveCredentialActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            putExtra(SaveCredentialActivity.EXTRA_SERVICE_NAME, serviceName)
+                            putExtra(SaveCredentialActivity.EXTRA_USERNAME, username)
+                            putExtra(SaveCredentialActivity.EXTRA_PASSWORD, password)
+                            putExtra(SaveCredentialActivity.EXTRA_URL_OR_PACKAGE, parsedForm.webDomain ?: parsedForm.packageName)
+                            savedItemId?.let { putExtra(SaveCredentialActivity.EXTRA_ITEM_ID, it) }
+                        }
+                        startActivity(intent)
+                        Timber.d("Launched SaveCredentialActivity pop-up for %s", serviceName)
+                    } catch (e: Exception) {
+                        Timber.w(e, "Could not start SaveCredentialActivity directly from background")
+                    }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to launch save dialog from autofill save request")
@@ -205,8 +226,15 @@ class VaultGuardAutofillService : AutofillService() {
 
         val saveInfoBuilder = SaveInfo.Builder(saveType, requiredIds)
         saveInfoBuilder.setDescription(getString(R.string.autofill_save_prompt))
-        parsedForm.usernameField?.autofillId?.let { usernameId ->
-            saveInfoBuilder.setOptionalIds(arrayOf(usernameId))
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            saveInfoBuilder.setFlags(SaveInfo.FLAG_SAVE_ON_ALL_VIEWS_INVISIBLE)
+        }
+
+        val optionalIds = mutableListOf<android.view.autofill.AutofillId>()
+        parsedForm.usernameField?.autofillId?.let { optionalIds.add(it) }
+        parsedForm.confirmPasswordField?.autofillId?.let { optionalIds.add(it) }
+        if (optionalIds.isNotEmpty()) {
+            saveInfoBuilder.setOptionalIds(optionalIds.toTypedArray())
         }
 
         builder.setSaveInfo(saveInfoBuilder.build())

@@ -49,7 +49,8 @@ object AutofillParser {
                 val hint = node.hint?.toString()
                 val inputType = node.inputType
                 val autofillHints = node.autofillHints?.toList() ?: emptyList()
-                val text = node.text?.toString()
+                val text = (if (node.autofillValue?.isText == true) node.autofillValue?.textValue?.toString() else null)
+                    ?: node.text?.toString()
 
                 val autofillNode = AutofillNode(
                     autofillId = autofillId,
@@ -61,20 +62,51 @@ object AutofillParser {
                 )
                 allNodes.add(autofillNode)
 
+                // Detect HTML attributes in web forms (Chrome, Firefox, WebView)
+                var isHtmlPassword = false
+                var isHtmlNewPassword = false
+                var isHtmlUsername = false
+
+                val htmlInfo = node.htmlInfo
+                if (htmlInfo != null) {
+                    val attrs = htmlInfo.attributes
+                    if (attrs != null) {
+                        for (attr in attrs) {
+                            val attrKey = attr.first?.lowercase() ?: ""
+                            val attrVal = attr.second?.lowercase() ?: ""
+                            if (attrKey == "type" && attrVal == "password") {
+                                isHtmlPassword = true
+                            }
+                            if (attrKey == "autocomplete") {
+                                if (attrVal.contains("new-password")) isHtmlNewPassword = true
+                                if (attrVal.contains("current-password")) isHtmlPassword = true
+                                if (attrVal.contains("username") || attrVal.contains("email")) isHtmlUsername = true
+                            }
+                            if (attrKey == "name" || attrKey == "id") {
+                                if (attrVal.contains("pass") || attrVal.contains("pwd")) isHtmlPassword = true
+                                if (attrVal.contains("user") || attrVal.contains("email") || attrVal.contains("login")) isHtmlUsername = true
+                            }
+                        }
+                    }
+                }
+
                 // Detect Field types
-                val isNewPassword = hasHint(autofillHints, "newPassword", "new_password") ||
+                val isNewPassword = isHtmlNewPassword ||
+                        hasHint(autofillHints, "newPassword", "new_password") ||
                         containsAny(idEntry, "new_password", "newpassword", "signup_password") ||
                         containsAny(hint, "new password", "create password")
 
                 val isConfirmPassword = containsAny(idEntry, "confirm_password", "confirmpassword", "repeat_password") ||
                         containsAny(hint, "confirm password", "repeat password", "re-enter password")
 
-                val isPassword = hasHint(autofillHints, View.AUTOFILL_HINT_PASSWORD) ||
+                val isPassword = isHtmlPassword ||
+                        hasHint(autofillHints, View.AUTOFILL_HINT_PASSWORD) ||
                         isPasswordInputType(inputType) ||
                         containsAny(idEntry, "password", "passwd", "pwd") ||
                         containsAny(hint, "password", "passcode")
 
-                val isUsername = hasHint(autofillHints, View.AUTOFILL_HINT_USERNAME, View.AUTOFILL_HINT_EMAIL_ADDRESS) ||
+                val isUsername = isHtmlUsername ||
+                        hasHint(autofillHints, View.AUTOFILL_HINT_USERNAME, View.AUTOFILL_HINT_EMAIL_ADDRESS) ||
                         isEmailInputType(inputType) ||
                         containsAny(idEntry, "username", "user", "login", "email") ||
                         containsAny(hint, "username", "email", "phone")

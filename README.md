@@ -74,6 +74,14 @@ To allow VaultGuard to autofill passwords and API keys across apps and browsers:
 3. Select **VaultGuard Autofill**.
 4. Confirm the prompt to activate VaultGuard as your default autofill provider.
 
+### Enabling Autofill in Google Chrome
+Google Chrome on Android uses its own built-in **Google Password Manager** by default on websites. To allow VaultGuard to save and fill logins in Chrome:
+1. Open **Chrome** on your device.
+2. Tap the **three-dot menu (⋮)** in the top right corner and tap **Settings**.
+3. Tap **Autofill services** (or **Autofill options**).
+4. Switch from *Autofill with Google* to **Autofill using another service**.
+5. Tap **Restart Chrome** when prompted.
+
 ---
 
 ## Security Architecture
