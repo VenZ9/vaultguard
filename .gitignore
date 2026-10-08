@@ -27,3 +27,5 @@ google-services.json
 .ssh/
 IndusTiers/
 IndusTiers-agy/
+.cache/
+.gitconfig
